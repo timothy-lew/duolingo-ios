@@ -21,6 +21,10 @@ struct BeginnerView: View {
     var words: [Word]
     @State var wordsTested = [Word]()
     
+    @State private var selectedAnswer: String? = nil
+    @State private var isCorrectAnswer: Bool? = nil
+
+    
     private var currentWord: Word {
         if currentQuestionIndex < wordsTested.count {
             return wordsTested[currentQuestionIndex]
@@ -49,7 +53,13 @@ struct BeginnerView: View {
                     Text(option)
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(selectedAnswer == option ?
+                                      (isCorrectAnswer == true ? Color.green : Color.red) :
+                                        Color.blue
+                                     )
+                        )                        
                         .foregroundColor(.white)
                         .cornerRadius(8)
                         .padding(.horizontal)
@@ -105,20 +115,23 @@ struct BeginnerView: View {
     }
     
     private func checkAnswer(selectedOption: String) {
-        if selectedOption == currentWord.original {
-            withAnimation(.easeInOut(duration: 0.5)) {
-                playSoundEffect(isCorrect: true)
-                score += 1
-            }
+        let isCorrect = selectedOption == currentWord.original
+        isCorrectAnswer = isCorrect
+        selectedAnswer = selectedOption
+        
+        if isCorrect {
+            playSoundEffect(isCorrect: true)
+            score += 1
         }
         else {
             playSoundEffect(isCorrect: false)
         }
         
-        currentQuestionIndex += 1
-        
         // Load next question or finish the game
-        loadQuestion()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            currentQuestionIndex += 1
+            loadQuestion()
+        }
     }
     
     private func playSoundEffect(isCorrect: Bool) {

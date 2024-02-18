@@ -18,7 +18,7 @@ struct GameView: View {
     
     var body: some View {
         VStack {
-            Text("Are you ready?")
+            Text("Malay Language")
                 .font(.title)
             
             if isGameActive {
@@ -43,10 +43,6 @@ struct GameView: View {
                     }
                 }
             }
-        }
-        .onChange(of: isGameActive) { newValue in
-            print("isGameActive changed to \(newValue)")
-            isGameActive.toggle()
         }
     }
     

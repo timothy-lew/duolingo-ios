@@ -40,7 +40,6 @@ struct AdvancedView: View {
             
             Text("Translate: \(currentSentence.originalWords.joined(separator: " "))")
                 .font(.subheadline)
-                .foregroundColor(.gray)
                 .padding()
             
             ForEach(shuffledWords, id: \.self) { word in
@@ -80,7 +79,6 @@ struct AdvancedView: View {
                 title: Text("Game Over"),
                 message: Text("Your Score: \(score)"),
                 dismissButton: .default(Text("OK")) {
-                    // Handle the OK button press if needed
                     isGameActive = false
                 }
             )
@@ -105,8 +103,11 @@ struct AdvancedView: View {
     
     private func selectWord(_ word: String) {
         selectedWordsStack.append(word)
-        
-        shuffledWords.removeAll { $0 == word }
+
+        withAnimation(.easeOut(duration: 0.3)) {
+            // Fade out the selected word
+            shuffledWords.removeAll { $0 == word }
+        }
         
         if (selectedWordsStack.count == currentSentence.translatedWords.count) {
             checkAnswer()
@@ -114,8 +115,8 @@ struct AdvancedView: View {
     }
     
     private func checkAnswer() {
-        print(selectedWordsStack)
-        print(currentSentence.translatedWords)
+//        print(selectedWordsStack)
+//        print(currentSentence.translatedWords)
         guard selectedWordsStack.count == currentSentence.translatedWords.count else {
             print("error: number of selected words does not match")
             return

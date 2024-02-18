@@ -1,10 +1,13 @@
 import SwiftUI
 
+enum Difficulty: String, CaseIterable {
+    case beginner = "Beginner"
+    case advanced = "Advanced"
+}
+
 struct ContentView: View {
-    
-    let difficulties = ["Beginner", "Intermediate", "Advanced"]
-    @State private var selectedDifficulty: String = "Beginner"
-    @State private var isPlaying: Bool = false
+    @State private var selectedDifficulty: Difficulty = .beginner
+    @State private var showGameView: Bool = true
     
     var body: some View {
         NavigationStack {
@@ -14,14 +17,14 @@ struct ContentView: View {
                     .padding()
                 
                 Picker("Please choose a color", selection: $selectedDifficulty) {
-                    ForEach(difficulties, id: \.self) {
-                        Text($0)
+                    ForEach(Difficulty.allCases, id: \.self) {
+                        Text($0.rawValue)
                     }
                 }
                 .pickerStyle(.menu)
                 
                 NavigationLink {
-                    GameView()
+                    GameView(selectedDifficulty: $selectedDifficulty, showGameView: $showGameView)
                 } label: {
                     Text("Let's play!")
                 }

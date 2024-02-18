@@ -8,32 +8,45 @@
 import SwiftUI
 
 struct GameView: View {
+    @Binding var selectedDifficulty: Difficulty
+    
     @State private var words = [Word]()
     @State private var sentences = [Sentence]()
-    @State private var isBeginnerQuizActive = false
-    @State private var isAdvancedQuizActive = false
+    
+    @State private var isGameActive = true
+    @Binding var showGameView: Bool
     
     var body: some View {
         VStack {
             Text("Are you ready?")
                 .font(.title)
             
-            if isBeginnerQuizActive {
-                BeginnerView(isQuizActive: $isBeginnerQuizActive, words: words)
-            }
-            else if isAdvancedQuizActive {
-                AdvancedView(isGameActive: $isAdvancedQuizActive, sentences: sentences)
-            }
-            else {
-                Button("Start Quiz") {
-                    isAdvancedQuizActive = true
+            if isGameActive {
+                switch selectedDifficulty {
+                case .beginner:
+                    if words.isEmpty {
+                        ProgressView("Loading Beginner Words...")
+                            .onAppear {
+                                loadBeginnerCsv()
+                            }
+                    } else {
+                        BeginnerView(isGameActive: $isGameActive, words: words)
+                    }
+                case.advanced:
+                    if sentences.isEmpty {
+                        ProgressView("Loading Advanced Sentences...")
+                            .onAppear {
+                                loadAdvancedCsv()
+                            }
+                    } else {
+                        AdvancedView(isGameActive: $isGameActive, sentences: sentences)
+                    }
                 }
             }
-            
         }
-        .onAppear {
-            loadBeginnerCsv()
-            loadAdvancedCsv()
+        .onChange(of: isGameActive) { newValue in
+            print("isGameActive changed to \(newValue)")
+            isGameActive.toggle()
         }
     }
     
@@ -98,5 +111,7 @@ struct GameView: View {
 }
 
 #Preview {
-    GameView()
+    @State var selectedDifficulty = Difficulty.beginner
+    @State var showGameView = true
+    return GameView(selectedDifficulty: $selectedDifficulty, showGameView: $showGameView)
 }

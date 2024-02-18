@@ -5,6 +5,7 @@
 //  Created by Timothy on 16/2/24.
 //
 
+import AVFoundation
 import SwiftUI
 
 struct AdvancedView: View {
@@ -16,6 +17,7 @@ struct AdvancedView: View {
     @Binding var isGameActive: Bool
     @State private var showAlert = false
     @State private var selectedWordsStack: [String] = []
+    @State private var player: AVAudioPlayer?
     
     @State var sentences: [Sentence]
     
@@ -23,7 +25,6 @@ struct AdvancedView: View {
         if currentSentenceIndex < totalSentences {
             return sentences[currentSentenceIndex]
         } else {
-            isGameActive = false
             return Sentence(originalWords: [], translatedWords: [])
         }
     }
@@ -132,8 +133,12 @@ struct AdvancedView: View {
         
         if isAllCorrect {
             withAnimation(.easeInOut(duration: 0.25)) {
+                playSoundEffect(isCorrect: true)
                 score += 1
             }
+        }
+        else {
+            playSoundEffect(isCorrect: false)
         }
         
         // Clear the selected words for the next question
@@ -142,6 +147,28 @@ struct AdvancedView: View {
         // Move to the next sentence
         currentSentenceIndex += 1
         loadSentence()
+    }
+    
+    private func playSoundEffect(isCorrect: Bool) {
+        let currentFilePath = #file
+        let packageDirectory = URL(fileURLWithPath: currentFilePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("Resources")
+        
+        var url = packageDirectory
+        if isCorrect {
+            url = packageDirectory.appendingPathComponent("correct.mp3")
+        }
+        else {
+            url = packageDirectory.appendingPathComponent("incorrect.mp3")
+        }
+        
+        do {
+            player = try AVAudioPlayer(contentsOf: url)
+            player?.play()
+        } catch {
+            print("Error playing sound effect: \(error.localizedDescription)")
+        }
     }
 }
 

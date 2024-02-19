@@ -11,20 +11,18 @@ import SwiftUI
 struct BeginnerView: View {
     private let totalQuestions = 5
     
+    @Binding var isGameActive: Bool
+    
+    var words: [Word]
     @State private var currentQuestionIndex = 0
     @State private var score = 0
     @State private var shuffledOptions: [String] = []
-    @Binding var isGameActive: Bool
     @State private var showAlert = false
     @State private var showCorrectAnswerAlert = false
     @State private var player: AVAudioPlayer?
-    
-    var words: [Word]
     @State var wordsTested = [Word]()
-    
     @State private var selectedAnswer: String? = nil
     @State private var isCorrectAnswer: Bool? = nil
-    
     @State private var originalWordToShow = ""
     
     private var currentWord: Word {
@@ -108,6 +106,7 @@ struct BeginnerView: View {
                 )
             }
         }
+        .padding(.vertical)
     }
     
     private func loadQuestions() {
@@ -155,7 +154,6 @@ struct BeginnerView: View {
             playSoundEffect(isCorrect: false)
             if (currentQuestionIndex < totalQuestions) {
                 showCorrectAnswerAlert = true
-//                print(currentQuestionIndex)
             }
         }
         

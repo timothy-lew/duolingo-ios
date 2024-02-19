@@ -43,6 +43,10 @@ struct GameView: View {
                     }
                 }
             }
+            
+            ShareLink(item: URL(string: "https://developer.apple.com/swift-student-challenge")!) {
+                Label("Share", systemImage: "paperplane.fill")
+            }
         }
     }
     

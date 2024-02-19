@@ -11,16 +11,16 @@ import SwiftUI
 struct AdvancedView: View {
     private let totalSentences = 5
     
+    @Binding var isGameActive: Bool
+    
+    @State var sentences: [Sentence]
     @State private var currentSentenceIndex = 0
     @State private var score = 0
     @State private var shuffledWords: [String] = []
-    @Binding var isGameActive: Bool
     @State private var showAlert = false
     @State private var selectedWordsStack: [String] = []
     @State private var player: AVAudioPlayer?
     @State private var showCorrectAnswerAlert = false
-    
-    @State var sentences: [Sentence]
     @State private var selectedWordsDisplay: String = ""
     @State private var originalSentenceToShow = [String]()
     
@@ -111,6 +111,7 @@ struct AdvancedView: View {
                 )
             }
         }
+        .padding(.vertical)
     }
     
     private func loadSentences() {
@@ -145,8 +146,6 @@ struct AdvancedView: View {
     }
     
     private func checkAnswer() {
-//        print(selectedWordsStack)
-//        print(currentSentence.translatedWords)
         guard selectedWordsStack.count == currentSentence.translatedWords.count else {
             print("error: number of selected words does not match")
             return
@@ -173,7 +172,6 @@ struct AdvancedView: View {
             playSoundEffect(isCorrect: false)
             if (currentSentenceIndex < totalSentences) {
                 showCorrectAnswerAlert = true
-//                print(currentQuestionIndex)
             }
         }
         

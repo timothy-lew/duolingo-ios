@@ -9,13 +9,14 @@ import AVFoundation
 import SwiftUI
 
 struct BeginnerView: View {
-    private let totalQuestions = 10
+    private let totalQuestions = 5
     
     @State private var currentQuestionIndex = 0
     @State private var score = 0
     @State private var shuffledOptions: [String] = []
     @Binding var isGameActive: Bool
     @State private var showAlert = false
+    @State private var showCorrectAnswerAlert = false
     @State private var player: AVAudioPlayer?
     
     var words: [Word]
@@ -23,7 +24,8 @@ struct BeginnerView: View {
     
     @State private var selectedAnswer: String? = nil
     @State private var isCorrectAnswer: Bool? = nil
-
+    
+    @State private var originalWordToShow = ""
     
     private var currentWord: Word {
         if currentQuestionIndex < wordsTested.count {
@@ -35,8 +37,14 @@ struct BeginnerView: View {
     
     var body: some View {
         VStack {
-            Text("Question \(currentQuestionIndex + 1)/\(totalQuestions)")
-                .padding()
+            if currentQuestionIndex + 1 <= totalQuestions {
+                Text("Question \(currentQuestionIndex + 1)/\(totalQuestions)")
+                    .padding()
+            }
+            else {
+                Text("Question \(currentQuestionIndex)/\(totalQuestions)")
+                    .padding()
+            }
             
             Text("What is the English translation of:")
                 .font(.headline)
@@ -74,26 +82,45 @@ struct BeginnerView: View {
             loadQuestions()
             loadQuestion()
         }
-        .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text("Game Over"),
-                message: Text("Your Score: \(score)/10"),
-                dismissButton: .default(Text("OK")) {
-                    isGameActive = false
-                }
-            )
+        .alert(isPresented: Binding<Bool>.constant(showAlert || showCorrectAnswerAlert)) {
+            if showAlert {
+                return Alert(
+                    title: Text("Game Over"),
+                    message: Text("Your Score: \(score)/\(totalQuestions)"),
+                    dismissButton: .default(Text("OK")) {
+                        isGameActive = false
+                    }
+                )
+            } else if showCorrectAnswerAlert {
+                return Alert(
+                    title: Text("Incorrect choice"),
+                    message: Text("Correct word: \(originalWordToShow)"),
+                    dismissButton: .default(Text("OK")) {
+                        showCorrectAnswerAlert = false
+                    }
+                )
+            }
+            else {
+                return Alert(
+                    title: Text("Default Alert"),
+                    message: Text("This should not be shown"),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
         }
     }
     
     private func loadQuestions() {
-        let shuffledWords = words.shuffled().prefix(10)
+        let shuffledWords = words.shuffled().prefix(totalQuestions)
         wordsTested = Array(shuffledWords)
     }
     
     private func loadQuestion() {
         guard currentQuestionIndex < totalQuestions else {
             // Game finished
+            print(showAlert)
             showAlert = true
+            print(showAlert)
             return
         }
         shuffledOptions = generateShuffledOptions()
@@ -116,6 +143,7 @@ struct BeginnerView: View {
     
     private func checkAnswer(selectedOption: String) {
         let isCorrect = selectedOption == currentWord.original
+        originalWordToShow = currentWord.original
         isCorrectAnswer = isCorrect
         selectedAnswer = selectedOption
         
@@ -125,6 +153,10 @@ struct BeginnerView: View {
         }
         else {
             playSoundEffect(isCorrect: false)
+            if (currentQuestionIndex < totalQuestions) {
+                showCorrectAnswerAlert = true
+//                print(currentQuestionIndex)
+            }
         }
         
         // Load next question or finish the game

@@ -9,7 +9,7 @@ import AVFoundation
 import SwiftUI
 
 struct AdvancedView: View {
-    private let totalSentences = 10
+    private let totalSentences = 5
     
     @State private var currentSentenceIndex = 0
     @State private var score = 0
@@ -18,8 +18,11 @@ struct AdvancedView: View {
     @State private var showAlert = false
     @State private var selectedWordsStack: [String] = []
     @State private var player: AVAudioPlayer?
+    @State private var showCorrectAnswerAlert = false
     
     @State var sentences: [Sentence]
+    @State private var selectedWordsDisplay: String = ""
+    @State private var originalSentenceToShow = [String]()
     
     private var currentSentence: Sentence {
         if currentSentenceIndex < totalSentences {
@@ -66,6 +69,14 @@ struct AdvancedView: View {
                     .cornerRadius(8)
             }
             
+            HStack {
+                Text("Selected Words:")
+                    .padding()
+                Text(selectedWordsDisplay)
+                    .foregroundColor(.green)  // Adjust color as needed
+                    .padding()
+            }
+            
             Spacer()
             
             Text("Current Score: \(score)")
@@ -74,14 +85,31 @@ struct AdvancedView: View {
             loadSentences()
             loadSentence()
         }
-        .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text("Game Over"),
-                message: Text("Your Score: \(score)"),
-                dismissButton: .default(Text("OK")) {
-                    isGameActive = false
-                }
-            )
+        .alert(isPresented: Binding<Bool>.constant(showAlert || showCorrectAnswerAlert)) {
+            if showAlert {
+                return Alert(
+                    title: Text("Game Over"),
+                    message: Text("Your Score: \(score)/\(totalSentences)"),
+                    dismissButton: .default(Text("OK")) {
+                        isGameActive = false
+                    }
+                )
+            } else if showCorrectAnswerAlert {
+                return Alert(
+                    title: Text("Incorrect choice"),
+                    message: Text("Correct sentence: \(originalSentenceToShow.joined(separator: " "))"),
+                    dismissButton: .default(Text("OK")) {
+                        showCorrectAnswerAlert = false
+                    }
+                )
+            }
+            else {
+                return Alert(
+                    title: Text("Default Alert"),
+                    message: Text("This should not be shown"),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
         }
     }
     
@@ -103,6 +131,8 @@ struct AdvancedView: View {
     
     private func selectWord(_ word: String) {
         selectedWordsStack.append(word)
+        // Update the display of selected words
+        selectedWordsDisplay = selectedWordsStack.joined(separator: " ")
 
         withAnimation(.easeOut(duration: 0.3)) {
             // Fade out the selected word
@@ -121,6 +151,7 @@ struct AdvancedView: View {
             print("error: number of selected words does not match")
             return
         }
+        originalSentenceToShow = currentSentence.translatedWords
         
         var isAllCorrect = true
         // Compare selected words with shuffled words
@@ -140,10 +171,15 @@ struct AdvancedView: View {
         }
         else {
             playSoundEffect(isCorrect: false)
+            if (currentSentenceIndex < totalSentences) {
+                showCorrectAnswerAlert = true
+//                print(currentQuestionIndex)
+            }
         }
         
         // Clear the selected words for the next question
         selectedWordsStack.removeAll()
+        selectedWordsDisplay = ""
         
         // Move to the next sentence
         currentSentenceIndex += 1
@@ -151,6 +187,7 @@ struct AdvancedView: View {
     }
     
     private func playSoundEffect(isCorrect: Bool) {
+//        https://pixabay.com/sound-effects/search/error/
         let currentFilePath = #file
         let packageDirectory = URL(fileURLWithPath: currentFilePath)
             .deletingLastPathComponent()
